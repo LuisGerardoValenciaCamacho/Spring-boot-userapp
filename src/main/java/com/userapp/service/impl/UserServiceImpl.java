@@ -27,6 +27,14 @@ public class UserServiceImpl implements IUserService {
 		List<User> listUser = userRepository.findAll();
 		return listUser;
 	}
+	
+	public boolean login(String username, String password) {
+		User user = userRepository.findByUsername(username).orElseThrow(() -> new ResourceNotFound(User.class, "Username not found"));
+		if(user.getPassword().equals(password)) {
+			return true;
+		}
+		return false;
+	}
 
 	public User create(User user) {
 		if(user.getUsername().isEmpty() || user.getUsername().isBlank()) {
@@ -39,7 +47,7 @@ public class UserServiceImpl implements IUserService {
 			new ResourceNotFound(User.class, "Email not found");
 		}
 		User newUser = new User(user.getUsername(), user.getPassword(), user.getEmail());
-		newUser = userRepository.saveAndFlush(newUser);
+		newUser = userRepository.save(newUser);
 		return newUser;
 	}
 
@@ -48,7 +56,7 @@ public class UserServiceImpl implements IUserService {
 		oldUser.setUsername(user.getUsername());
 		oldUser.setPassword(user.getPassword());
 		oldUser.setEmail(oldUser.getEmail());
-		oldUser = userRepository.saveAndFlush(oldUser);
+		oldUser = userRepository.save(oldUser);
 		return oldUser;
 	}
 

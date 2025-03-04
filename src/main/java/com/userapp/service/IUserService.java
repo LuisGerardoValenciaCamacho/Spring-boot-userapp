@@ -9,6 +9,8 @@ public interface IUserService {
 	
 	List<User> findAll();
 	
+	boolean login(String username, String password);
+	
 	User create(User user);
 	
 	User update(Long id, User user);
