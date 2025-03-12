@@ -7,6 +7,8 @@ import com.userapp.model.User;
 public interface IUserService {
 	User findById(Long id);
 	
+	User findByUsername(String username);
+	
 	List<User> findAll();
 	
 	boolean login(String username, String password);

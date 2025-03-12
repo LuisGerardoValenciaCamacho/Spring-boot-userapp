@@ -2,6 +2,7 @@ package com.userapp.service.impl;
 
 import java.util.List;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.userapp.exception.ResourceNotFound;
@@ -12,14 +13,21 @@ import com.userapp.service.IUserService;
 @Service
 public class UserServiceImpl implements IUserService {
 	
-	IUserRepository userRepository;
+	private IUserRepository userRepository;
+	private PasswordEncoder passwordEncoder;
 	
-	public UserServiceImpl(IUserRepository iUserRepository) {
+	public UserServiceImpl(IUserRepository iUserRepository, PasswordEncoder password) {
 		this.userRepository = iUserRepository;
+		this.passwordEncoder = password;
 	}
 
 	public User findById(Long id) {
 		User user = userRepository.findById(id).orElseThrow(() -> new ResourceNotFound(User.class, "Usuario no encontrado"));
+		return user;
+	}
+	
+	public User findByUsername(String username) {
+		User user = userRepository.findByUsername(username).orElseThrow(() -> new ResourceNotFound(User.class, "Usuario no encontrado"));
 		return user;
 	}
 
@@ -46,7 +54,7 @@ public class UserServiceImpl implements IUserService {
 		if(user.getEmail().isEmpty() || user.getEmail().isBlank()) {
 			new ResourceNotFound(User.class, "Email not found");
 		}
-		User newUser = new User(user.getUsername(), user.getPassword(), user.getEmail());
+		User newUser = new User(user.getUsername(), passwordEncoder.encode(user.getPassword()), user.getEmail());
 		newUser = userRepository.save(newUser);
 		return newUser;
 	}
