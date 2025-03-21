@@ -1,7 +1,7 @@
 package com.userapp.security;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,9 +42,12 @@ public class JwtFilterValidationSecurity extends BasicAuthenticationFilter {
 		String token = header.replace(TokenJwtConstants.PREFIX_TOKEN, "");
 		try {			
 			Claims claims = Jwts.parser().verifyWith((SecretKey) TokenJwtConstants.KEY).build().parseSignedClaims(token).getPayload();
-			String username = claims.getSubject();
-			List<GrantedAuthority> authorities = new ArrayList<>();
-			authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
+			String username = claims.get("username").toString();
+			List<GrantedAuthority> authorities = Arrays.asList(
+				new ObjectMapper()
+					.addMixIn(SimpleGrantedAuthority.class, SimpleGrantedAuthoritiyJsonCreator.class)
+					.readValue(claims.get("authorities").toString().getBytes(), SimpleGrantedAuthority[].class)
+			); 
 			UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(username, null, authorities);
 			SecurityContextHolder.getContext().setAuthentication(authentication);
 			chain.doFilter(request, response);

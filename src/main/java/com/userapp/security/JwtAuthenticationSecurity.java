@@ -1,6 +1,7 @@
 package com.userapp.security;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -9,6 +10,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import com.fasterxml.jackson.core.exc.StreamReadException;
@@ -56,7 +58,18 @@ public class JwtAuthenticationSecurity extends UsernamePasswordAuthenticationFil
 	@Override
 	protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
 		String username = ((org.springframework.security.core.userdetails.User) authResult.getPrincipal()).getUsername();
-		String token = Jwts.builder().subject(username).signWith(TokenJwtConstants.KEY).issuedAt(new Date()).expiration(new Date(System.currentTimeMillis() + 600000)).compact();
+		Collection<? extends GrantedAuthority> roles = authResult.getAuthorities();
+		boolean isAdmin = roles.stream().allMatch(role -> role.getAuthority().equals("ROLE_ADMIN"));
+		String token = Jwts.builder()
+			.claims()
+				.add("authorities", new ObjectMapper().writeValueAsString(roles))
+				.add("isAdmin", isAdmin)
+				.add("username", username)
+				.and()
+			.signWith(TokenJwtConstants.KEY)
+			.issuedAt(new Date())
+			.expiration(new Date(System.currentTimeMillis() + 600000))
+			.compact();
 		response.addHeader("Authorization", String.format(TokenJwtConstants.PREFIX_TOKEN + "%1$s", token));
 		Map<String, Object> body = new HashMap<>();
 		body.put("token", token);

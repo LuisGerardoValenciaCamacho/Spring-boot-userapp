@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.userapp.model.User;
+import com.userapp.model.DTO.UserDTO;
 import com.userapp.service.IUserService;
 
 @RestController
@@ -32,27 +33,27 @@ public class UserController {
 	}
 	
 	@GetMapping("/all")
-	public ResponseEntity<List<User>> getAll() {
-		List<User> listUsers = new ArrayList<User>();
+	public ResponseEntity<List<UserDTO>> getAll() {
+		List<UserDTO> listUsers = new ArrayList<UserDTO>();
 		listUsers = userService.findAll();
 		return ResponseEntity.status(HttpStatus.OK).body(listUsers);
 	}
 	
 	@GetMapping("/{id}")
-	public ResponseEntity<User> getUserById(@PathVariable("id") Long id) {
-		User user = userService.findById(id);
+	public ResponseEntity<UserDTO> getUserById(@PathVariable("id") Long id) {
+		UserDTO user = userService.findById(id);
 		return ResponseEntity.ok(user);
 	}
 	
 	@PostMapping("/create")
-	public ResponseEntity<User> createUser (@RequestBody User user) {
-		User newUser = userService.create(user);
+	public ResponseEntity<UserDTO> createUser (@RequestBody User user) {
+		UserDTO newUser = userService.create(user);
 		return ResponseEntity.status(HttpStatus.CREATED).body(newUser);
 	}
 	
 	@PutMapping("/update/{id}")
-	public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody User user) {
-		User newUser = userService.update(id, user);
+	public ResponseEntity<UserDTO> updateUser(@PathVariable Long id, @RequestBody User user) {
+		UserDTO newUser = userService.update(id, user);
 		return ResponseEntity.status(HttpStatus.CREATED).body(newUser);
 	}
 	

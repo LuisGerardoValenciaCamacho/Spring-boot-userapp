@@ -11,6 +11,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 
 @Entity
 @Table(name = "user")
@@ -30,26 +31,28 @@ public class User {
 	private String email;
 	
 	@ManyToMany
-	@JoinTable(name = "users_roles", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
+	@JoinTable(name = "users_roles", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"), uniqueConstraints = { @UniqueConstraint(columnNames = {"user_id", "role_id"}) })
 	private List<Role> roles;
 
 	public User() {
 		super();
 	}
 
-	public User(String username, String password, String email) {
+	public User(String username, String password, String email, List<Role> listRoles) {
 		super();
 		this.username = username;
 		this.password = password;
 		this.email = email;
+		this.roles = listRoles;
 	}
 
-	public User(Long id, String username, String password, String email) {
+	public User(Long id, String username, String password, String email, List<Role> listRoles) {
 		super();
 		this.id = id;
 		this.username = username;
 		this.password = password;
 		this.email = email;
+		this.roles = listRoles;
 	}
 
 	public Long getId() {
@@ -82,6 +85,14 @@ public class User {
 
 	public void setEmail(String email) {
 		this.email = email;
+	}
+	
+	public List<Role> getRoles() {
+		return roles;
+	}
+
+	public void setRoles(List<Role> roles) {
+		this.roles = roles;
 	}
 
 	@Override
