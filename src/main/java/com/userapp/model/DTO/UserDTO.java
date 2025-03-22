@@ -12,6 +12,8 @@ public class UserDTO {
 	
 	private String email;
 	
+	private boolean admin;
+	
 	List<Role> listRoles;
 
 	public Long getId() {
@@ -44,5 +46,13 @@ public class UserDTO {
 
 	public void setListRoles(List<Role> listRoles) {
 		this.listRoles = listRoles;
+	}
+
+	public boolean isAdmin() {
+		return admin;
+	}
+
+	public void setAdmin(boolean admin) {
+		this.admin = admin;
 	}
 }

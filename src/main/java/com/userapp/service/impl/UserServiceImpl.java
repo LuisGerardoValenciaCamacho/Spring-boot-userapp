@@ -34,6 +34,8 @@ public class UserServiceImpl extends BaseModelMapper<User, UserDTO> implements I
 	public UserDTO findById(Long id) {
 		User user = userRepository.findById(id).orElseThrow(() -> new ResourceNotFound(User.class, "Usuario no encontrado"));
 		UserDTO userDto = mapModelToDTO(user);
+		boolean isAdmin = user.getRoles().stream().anyMatch(role -> role.equals("ROLE_ADMIN"));
+		userDto.setAdmin(isAdmin);
 		return userDto;
 	}
 	
@@ -48,7 +50,12 @@ public class UserServiceImpl extends BaseModelMapper<User, UserDTO> implements I
 	@Transactional(readOnly = true)
 	public List<UserDTO> findAll() {
 		List<User> listUser = userRepository.findAll();
-		List<UserDTO> listDto = listUser.stream().map(user -> mapModelToDTO(user)).toList();
+		List<UserDTO> listDto = listUser.stream().map(user -> {
+			boolean isAdmin = user.getRoles().stream().anyMatch(role -> role.getName().equals("ROLE_ADMIN"));
+			UserDTO userDto = mapModelToDTO(user);
+			userDto.setAdmin(isAdmin);
+			return userDto;
+		}).toList();
 		return listDto;
 	}
 	
@@ -64,9 +71,7 @@ public class UserServiceImpl extends BaseModelMapper<User, UserDTO> implements I
 		if(user.getEmail().isEmpty() || user.getEmail().isBlank()) {
 			new ResourceNotFound(User.class, "Email not found");
 		}
-		List<Role> listRoles = new ArrayList<Role>();
-		Role role = userRepository.findRoleByName("ROLE_USER").orElseThrow(() -> new ResourceNotFound(Role.class, "Role not found"));
-		listRoles.add(role);
+		List<Role> listRoles = getRolesOfUser(user);
 		User newUser = new User(user.getUsername(), passwordEncoder.encode(user.getPassword()), user.getEmail(), listRoles);
 		newUser = userRepository.save(newUser);
 		return mapModelToDTO(newUser);
@@ -77,8 +82,9 @@ public class UserServiceImpl extends BaseModelMapper<User, UserDTO> implements I
 	public UserDTO update(Long id, User user) {
 		User oldUser = userRepository.findById(id).orElseThrow(() -> new ResourceNotFound(User.class, "Usuario no encontrado"));
 		oldUser.setUsername(user.getUsername());
-		oldUser.setPassword(user.getPassword());
 		oldUser.setEmail(oldUser.getEmail());
+		List<Role> listRoles = getRolesOfUser(user);
+		oldUser.setRoles(listRoles);
 		oldUser = userRepository.save(oldUser);
 		return mapModelToDTO(oldUser);
 	}
@@ -88,6 +94,17 @@ public class UserServiceImpl extends BaseModelMapper<User, UserDTO> implements I
 	public void delete(Long id) {
 		User user = userRepository.findById(id).orElseThrow(() -> new ResourceNotFound(User.class, "Usuario no encontrado"));
 		userRepository.delete(user);
+	}
+	
+	private List<Role> getRolesOfUser(User user) {
+		List<Role> listRoles = new ArrayList<Role>();
+		Role roleUser = userRepository.findRoleByName("ROLE_USER").orElseThrow(() -> new ResourceNotFound(Role.class, "Role not found"));
+		if(user.isAdmin()) {
+			Role roleAdmin = userRepository.findRoleByName("ROLE_ADMIN").orElseThrow(() -> new ResourceNotFound(Role.class, "Role not found"));
+			listRoles.add(roleAdmin);
+		}
+		listRoles.add(roleUser);
+		return listRoles;
 	}
 
 }

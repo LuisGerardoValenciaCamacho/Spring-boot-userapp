@@ -59,7 +59,7 @@ public class JwtAuthenticationSecurity extends UsernamePasswordAuthenticationFil
 	protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
 		String username = ((org.springframework.security.core.userdetails.User) authResult.getPrincipal()).getUsername();
 		Collection<? extends GrantedAuthority> roles = authResult.getAuthorities();
-		boolean isAdmin = roles.stream().allMatch(role -> role.getAuthority().equals("ROLE_ADMIN"));
+		boolean isAdmin = roles.stream().anyMatch(role -> role.getAuthority().equals("ROLE_ADMIN"));
 		String token = Jwts.builder()
 			.claims()
 				.add("authorities", new ObjectMapper().writeValueAsString(roles))
